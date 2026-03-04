@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>电子物料规格描述工具</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🔧 电子物料规格描述工具</h1>
+            <p>自动提取物料型号和规格描述，生成ERP料号</p>
+        </header>
+
+        <main>
+            <!-- 分类选择 -->
+            <section class="category-section">
+                <h2>📋 1. 选择物料分类</h2>
+                <div class="category-grid" id="categoryGrid">
+                    <!-- 动态生成 -->
+                </div>
+            </section>
+
+            <!-- 配置面板 -->
+            <section class="config-section" id="configSection" style="display:none;">
+                <h2>⚙️ 2. 规格参数配置</h2>
+                <div class="config-panel" id="configPanel">
+                    <!-- 动态生成 -->
+                </div>
+                <button class="btn btn-secondary" onclick="saveConfig()">保存配置</button>
+            </section>
+
+            <!-- 输入区域 -->
+            <section class="input-section">
+                <h2>📄 3. 输入数据手册内容</h2>
+                <textarea id="inputText" placeholder="粘贴数据手册内容...
+例如：
+RC0402FR-0710KL
+贴片电阻 10KΩ ±1% 1/16W 0402封装"></textarea>
+                <div class="input-actions">
+                    <button class="btn btn-primary" onclick="extractSpecs()">🔍 提取规格</button>
+                    <button class="btn btn-secondary" onclick="clearInput()">清空</button>
+                </div>
+            </section>
+
+            <!-- 结果展示 -->
+            <section class="result-section" id="resultSection" style="display:none;">
+                <h2>📊 4. 提取结果</h2>
+                <table class="result-table">
+                    <thead>
+                        <tr>
+                            <th>型号</th>
+                            <th>规格描述</th>
+                            <th>分类</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="resultBody">
+                        <!-- 动态生成 -->
+                    </tbody>
+                </table>
+                <div class="result-actions">
+                    <button class="btn btn-success" onclick="copyAll()">📋 复制全部</button>
+                    <button class="btn btn-secondary" onclick="exportCSV()">📥 导出CSV</button>
+                </div>
+            </section>
+        </main>
+
+        <!-- 配置管理弹窗 -->
+        <div class="modal" id="configModal">
+            <div class="modal-content">
+                <h3>配置管理</h3>
+                <div id="configEditor"></div>
+                <button class="btn btn-primary" onclick="closeModal()">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/app.js"></script>
+</body>
+</html>
