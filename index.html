@@ -4,79 +4,628 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>电子物料规格描述工具</title>
-    <link rel="stylesheet" href="css/style.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif;
+            background: linear-gradient(135deg, #1a1f3a 0%, #0a0e27 100%);
+            min-height: 100vh;
+            color: #fff;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            padding: 40px 0;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(90deg, #00d4ff, #00ff88);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #94a3b8;
+            font-size: 1.1rem;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-top: 30px;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            padding: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .card h2 {
+            font-size: 1.3rem;
+            margin-bottom: 20px;
+            color: #00d4ff;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #94a3b8;
+            font-size: 0.9rem;
+        }
+
+        select, input[type="text"], input[type="number"] {
+            width: 100%;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: #fff;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        select:focus, input:focus {
+            outline: none;
+            border-color: #00d4ff;
+            box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.1);
+        }
+
+        select option {
+            background: #1a1f3a;
+            color: #fff;
+        }
+
+        .input-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 14px 28px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(90deg, #00d4ff, #00a8cc);
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 212, 255, 0.3);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .result-box {
+            background: rgba(0, 212, 255, 0.1);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+            min-height: 150px;
+        }
+
+        .result-box h3 {
+            color: #00d4ff;
+            margin-bottom: 12px;
+            font-size: 1rem;
+        }
+
+        .result-text {
+            font-family: 'Courier New', monospace;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 8px;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+        .component-types {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .type-btn {
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: #94a3b8;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+
+        .type-btn:hover, .type-btn.active {
+            background: rgba(0, 212, 255, 0.2);
+            border-color: #00d4ff;
+            color: #00d4ff;
+        }
+
+        .history-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .history-item {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .history-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .history-item .title {
+            color: #fff;
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        .history-item .desc {
+            color: #94a3b8;
+            font-size: 0.85rem;
+        }
+
+        .copy-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 6px 12px;
+            font-size: 0.85rem;
+        }
+
+        .result-wrapper {
+            position: relative;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #94a3b8;
+        }
+
+        .empty-state svg {
+            width: 64px;
+            height: 64px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+    </style>
 </head>
 <body>
     <div class="container">
         <header>
             <h1>🔧 电子物料规格描述工具</h1>
-            <p>自动提取物料型号和规格描述，生成ERP料号</p>
+            <p class="subtitle">快速生成标准化的电子元器件规格描述</p>
         </header>
 
-        <main>
-            <!-- 分类选择 -->
-            <section class="category-section">
-                <h2>📋 1. 选择物料分类</h2>
-                <div class="category-grid" id="categoryGrid">
-                    <!-- 动态生成 -->
+        <div class="main-content">
+            <!-- 左侧：输入区域 -->
+            <div class="card">
+                <h2>📋 物料信息</h2>
+                
+                <label>选择元器件类型</label>
+                <div class="component-types">
+                    <div class="type-btn active" data-type="resistor">电阻</div>
+                    <div class="type-btn" data-type="capacitor">电容</div>
+                    <div class="type-btn" data-type="inductor">电感</div>
+                    <div class="type-btn" data-type="diode">二极管</div>
+                    <div class="type-btn" data-type="transistor">三极管</div>
+                    <div class="type-btn" data-type="ic">IC芯片</div>
                 </div>
-            </section>
 
-            <!-- 配置面板 -->
-            <section class="config-section" id="configSection" style="display:none;">
-                <h2>⚙️ 2. 规格参数配置</h2>
-                <div class="config-panel" id="configPanel">
-                    <!-- 动态生成 -->
+                <div id="input-form">
+                    <!-- 动态表单内容 -->
                 </div>
-                <button class="btn btn-secondary" onclick="saveConfig()">保存配置</button>
-            </section>
 
-            <!-- 输入区域 -->
-            <section class="input-section">
-                <h2>📄 3. 输入数据手册内容</h2>
-                <textarea id="inputText" placeholder="粘贴数据手册内容...
-例如：
-RC0402FR-0710KL
-贴片电阻 10KΩ ±1% 1/16W 0402封装"></textarea>
-                <div class="input-actions">
-                    <button class="btn btn-primary" onclick="extractSpecs()">🔍 提取规格</button>
-                    <button class="btn btn-secondary" onclick="clearInput()">清空</button>
+                <button class="btn btn-primary" onclick="generateDescription()">
+                    ✨ 生成规格描述
+                </button>
+                <button class="btn btn-secondary" onclick="clearForm()">
+                    🗑️ 清空
+                </button>
+            </div>
+
+            <!-- 右侧：结果区域 -->
+            <div class="card">
+                <h2>📝 规格描述</h2>
+                
+                <div class="result-wrapper">
+                    <div id="result-area" class="result-box">
+                        <div class="empty-state">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                            <p>在左侧填写物料信息，点击"生成规格描述"</p>
+                        </div>
+                    </div>
+                    <button id="copy-btn" class="btn btn-secondary copy-btn" style="display: none;" onclick="copyResult()">
+                        📋 复制
+                    </button>
                 </div>
-            </section>
 
-            <!-- 结果展示 -->
-            <section class="result-section" id="resultSection" style="display:none;">
-                <h2>📊 4. 提取结果</h2>
-                <table class="result-table">
-                    <thead>
-                        <tr>
-                            <th>型号</th>
-                            <th>规格描述</th>
-                            <th>分类</th>
-                            <th>操作</th>
-                        </tr>
-                    </thead>
-                    <tbody id="resultBody">
-                        <!-- 动态生成 -->
-                    </tbody>
-                </table>
-                <div class="result-actions">
-                    <button class="btn btn-success" onclick="copyAll()">📋 复制全部</button>
-                    <button class="btn btn-secondary" onclick="exportCSV()">📥 导出CSV</button>
+                <h2 style="margin-top: 30px;">🕐 历史记录</h2>
+                <div id="history-list" class="history-list">
+                    <div class="empty-state" style="padding: 20px;">
+                        <p>暂无历史记录</p>
+                    </div>
                 </div>
-            </section>
-        </main>
-
-        <!-- 配置管理弹窗 -->
-        <div class="modal" id="configModal">
-            <div class="modal-content">
-                <h3>配置管理</h3>
-                <div id="configEditor"></div>
-                <button class="btn btn-primary" onclick="closeModal()">关闭</button>
+                <button class="btn btn-secondary" style="margin-top: 10px; width: 100%;" onclick="clearHistory()">
+                    🗑️ 清空历史
+                </button>
             </div>
         </div>
     </div>
 
-    <script src="js/app.js"></script>
+    <script>
+        // 当前选中的元器件类型
+        let currentType = 'resistor';
+        let history = JSON.parse(localStorage.getItem('componentHistory') || '[]');
+
+        // 表单配置
+        const formConfigs = {
+            resistor: {
+                fields: [
+                    { name: 'value', label: '阻值', type: 'number', placeholder: '如：10', unit: 'Ω' },
+                    { name: 'unit', label: '单位', type: 'select', options: ['Ω', 'kΩ', 'MΩ'] },
+                    { name: 'tolerance', label: '精度', type: 'select', options: ['±1%', '±5%', '±10%', '±20%'] },
+                    { name: 'power', label: '功率', type: 'select', options: ['1/8W', '1/4W', '1/2W', '1W', '2W', '5W'] },
+                    { name: 'package', label: '封装', type: 'select', options: ['0201', '0402', '0603', '0805', '1206', '1210', '2512', '插件'] },
+                    { name: 'brand', label: '品牌', type: 'text', placeholder: '如：Yageo、国巨' },
+                    { name: 'model', label: '型号', type: 'text', placeholder: '如：RC0603FR-0710RL' }
+                ]
+            },
+            capacitor: {
+                fields: [
+                    { name: 'value', label: '容值', type: 'number', placeholder: '如：100', unit: 'pF' },
+                    { name: 'unit', label: '单位', type: 'select', options: ['pF', 'nF', 'μF', 'mF', 'F'] },
+                    { name: 'voltage', label: '耐压', type: 'select', options: ['6.3V', '10V', '16V', '25V', '50V', '100V', '250V', '450V'] },
+                    { name: 'tolerance', label: '精度', type: 'select', options: ['±5%', '±10%', '±20%'] },
+                    { name: 'type', label: '类型', type: 'select', options: ['陶瓷电容', '铝电解', '钽电容', '薄膜电容', 'MLCC'] },
+                    { name: 'package', label: '封装', type: 'select', options: ['0201', '0402', '0603', '0805', '1206', '1210', '插件', 'SMD'] },
+                    { name: 'brand', label: '品牌', type: 'text', placeholder: '如：Murata、三星' },
+                    { name: 'model', label: '型号', type: 'text', placeholder: '如：GRM188R61A106ME69D' }
+                ]
+            },
+            inductor: {
+                fields: [
+                    { name: 'value', label: '电感值', type: 'number', placeholder: '如：10', unit: 'μH' },
+                    { name: 'unit', label: '单位', type: 'select', options: ['nH', 'μH', 'mH', 'H'] },
+                    { name: 'current', label: '额定电流', type: 'number', placeholder: '如：1', unit: 'A' },
+                    { name: 'tolerance', label: '精度', type: 'select', options: ['±5%', '±10%', '±20%'] },
+                    { name: 'package', label: '封装', type: 'select', options: ['0201', '0402', '0603', '0805', '1206', '插件'] },
+                    { name: 'brand', label: '品牌', type: 'text', placeholder: '如：TDK、Taiyo' },
+                    { name: 'model', label: '型号', type: 'text', placeholder: '如：MLF1608A100KT' }
+                ]
+            },
+            diode: {
+                fields: [
+                    { name: 'type', label: '类型', type: 'select', options: ['整流二极管', '肖特基二极管', '稳压二极管', '发光二极管', '快恢复二极管', 'TVS二极管'] },
+                    { name: 'voltage', label: '反向电压', type: 'number', placeholder: '如：100', unit: 'V' },
+                    { name: 'current', label: '正向电流', type: 'number', placeholder: '如：1', unit: 'A' },
+                    { name: 'package', label: '封装', type: 'select', options: ['SOD-123', 'SOD-323', 'SMA', 'SMB', 'SMC', 'DO-41', 'DO-35', '插件'] },
+                    { name: 'brand', label: '品牌', type: 'text', placeholder: '如：ON、Vishay' },
+                    { name: 'model', label: '型号', type: 'text', placeholder: '如：1N4007' }
+                ]
+            },
+            transistor: {
+                fields: [
+                    { name: 'type', label: '类型', type: 'select', options: ['NPN', 'PNP', 'MOSFET-N', 'MOSFET-P', 'IGBT'] },
+                    { name: 'voltage', label: '耐压', type: 'number', placeholder: '如：40', unit: 'V' },
+                    { name: 'current', label: '电流', type: 'number', placeholder: '如：200', unit: 'mA' },
+                    { name: 'power', label: '功率', type: 'select', options: ['0.2W', '0.5W', '1W', '2W', '5W'] },
+                    { name: 'package', label: '封装', type: 'select', options: ['SOT-23', 'SOT-89', 'TO-92', 'TO-220', 'TO-252', 'SOP-8'] },
+                    { name: 'brand', label: '品牌', type: 'text', placeholder: '如：ON、ST' },
+                    { name: 'model', label: '型号', type: 'text', placeholder: '如：BC847C' }
+                ]
+            },
+            ic: {
+                fields: [
+                    { name: 'function', label: '功能类型', type: 'select', options: ['MCU', '电源管理', '运放', 'ADC/DAC', '接口芯片', '存储器', '逻辑芯片', '驱动芯片'] },
+                    { name: 'voltage', label: '工作电压', type: 'text', placeholder: '如：3.3V / 5V' },
+                    { name: 'package', label: '封装', type: 'select', options: ['SOP-8', 'SOP-16', 'QFN', 'QFP', 'BGA', 'DIP', 'SOT-23-5', 'TSSOP'] },
+                    { name: 'pin_count', label: '引脚数', type: 'number', placeholder: '如：8' },
+                    { name: 'brand', label: '品牌', type: 'text', placeholder: '如：TI、ST、NXP' },
+                    { name: 'model', label: '型号', type: 'text', placeholder: '如：STM32F103C8T6' }
+                ]
+            }
+        };
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            renderForm();
+            renderHistory();
+            
+            // 绑定类型选择按钮
+            document.querySelectorAll('.type-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    currentType = this.dataset.type;
+                    renderForm();
+                });
+            });
+        });
+
+        // 渲染表单
+        function renderForm() {
+            const config = formConfigs[currentType];
+            const formContainer = document.getElementById('input-form');
+            
+            let html = '';
+            config.fields.forEach(field => {
+                html += '<div class="form-group">';
+                html += `<label>${field.label}</label>`;
+                
+                if (field.type === 'select') {
+                    html += `<select id="${field.name}">`;
+                    field.options.forEach(opt => {
+                        html += `<option value="${opt}">${opt}</option>`;
+                    });
+                    html += '</select>';
+                } else if (field.type === 'number') {
+                    html += '<div class="input-row">';
+                    html += `<input type="number" id="${field.name}" placeholder="${field.placeholder}">`;
+                    if (field.unit) {
+                        html += `<select id="${field.name}_unit"><option>${field.unit}</option></select>`;
+                    }
+                    html += '</div>';
+                } else {
+                    html += `<input type="text" id="${field.name}" placeholder="${field.placeholder}">`;
+                }
+                
+                html += '</div>';
+            });
+            
+            formContainer.innerHTML = html;
+        }
+
+        // 生成规格描述
+        function generateDescription() {
+            const config = formConfigs[currentType];
+            let data = {};
+            
+            // 收集表单数据
+            config.fields.forEach(field => {
+                const element = document.getElementById(field.name);
+                if (element) {
+                    data[field.name] = element.value;
+                }
+            });
+            
+            // 生成描述
+            let description = '';
+            const typeNames = {
+                resistor: '电阻',
+                capacitor: '电容',
+                inductor: '电感',
+                diode: '二极管',
+                transistor: '三极管',
+                ic: 'IC芯片'
+            };
+            
+            description += `【物料类型】${typeNames[currentType]}\n`;
+            
+            switch(currentType) {
+                case 'resistor':
+                    description += `【规格参数】${data.value}${data.unit} ${data.tolerance}\n`;
+                    description += `【功率】${data.power}\n`;
+                    description += `【封装】${data.package}\n`;
+                    if (data.brand) description += `【品牌】${data.brand}\n`;
+                    if (data.model) description += `【型号】${data.model}\n`;
+                    description += `\n【完整描述】${data.value}${data.unit} ${data.tolerance} ${data.power} ${data.package}贴片电阻`;
+                    if (data.brand) description += `，${data.brand}品牌`;
+                    if (data.model) description += `，型号${data.model}`;
+                    break;
+                    
+                case 'capacitor':
+                    description += `【规格参数】${data.value}${data.unit} ${data.voltage} ${data.tolerance}\n`;
+                    description += `【类型】${data.type}\n`;
+                    description += `【封装】${data.package}\n`;
+                    if (data.brand) description += `【品牌】${data.brand}\n`;
+                    if (data.model) description += `【型号】${data.model}\n`;
+                    description += `\n【完整描述】${data.value}${data.unit} ${data.voltage} ${data.tolerance} ${data.type}，${data.package}封装`;
+                    if (data.brand) description += `，${data.brand}品牌`;
+                    if (data.model) description += `，型号${data.model}`;
+                    break;
+                    
+                case 'inductor':
+                    description += `【规格参数】${data.value}${data.unit} ${data.tolerance}\n`;
+                    description += `【额定电流】${data.current}A\n`;
+                    description += `【封装】${data.package}\n`;
+                    if (data.brand) description += `【品牌】${data.brand}\n`;
+                    if (data.model) description += `【型号】${data.model}\n`;
+                    description += `\n【完整描述】${data.value}${data.unit} ${data.tolerance} 额定电流${data.current}A 贴片电感，${data.package}封装`;
+                    if (data.brand) description += `，${data.brand}品牌`;
+                    if (data.model) description += `，型号${data.model}`;
+                    break;
+                    
+                case 'diode':
+                    description += `【类型】${data.type}\n`;
+                    description += `【反向电压】${data.voltage}V\n`;
+                    description += `【正向电流】${data.current}A\n`;
+                    description += `【封装】${data.package}\n`;
+                    if (data.brand) description += `【品牌】${data.brand}\n`;
+                    if (data.model) description += `【型号】${data.model}\n`;
+                    description += `\n【完整描述】${data.type} ${data.voltage}V ${data.current}A，${data.package}封装`;
+                    if (data.brand) description += `，${data.brand}品牌`;
+                    if (data.model) description += `，型号${data.model}`;
+                    break;
+                    
+                case 'transistor':
+                    description += `【类型】${data.type}\n`;
+                    description += `【耐压】${data.voltage}V\n`;
+                    description += `【电流】${data.current}mA\n`;
+                    description += `【功率】${data.power}\n`;
+                    description += `【封装】${data.package}\n`;
+                    if (data.brand) description += `【品牌】${data.brand}\n`;
+                    if (data.model) description += `【型号】${data.model}\n`;
+                    description += `\n【完整描述】${data.type}三极管 ${data.voltage}V ${data.current}mA ${data.power}，${data.package}封装`;
+                    if (data.brand) description += `，${data.brand}品牌`;
+                    if (data.model) description += `，型号${data.model}`;
+                    break;
+                    
+                case 'ic':
+                    description += `【功能类型】${data.function}\n`;
+                    description += `【工作电压】${data.voltage}\n`;
+                    description += `【封装】${data.package} ${data.pin_count}pin\n`;
+                    if (data.brand) description += `【品牌】${data.brand}\n`;
+                    if (data.model) description += `【型号】${data.model}\n`;
+                    description += `\n【完整描述】${data.function}芯片 ${data.voltage}，${data.package}封装 ${data.pin_count}脚`;
+                    if (data.brand) description += `，${data.brand}品牌`;
+                    if (data.model) description += `，型号${data.model}`;
+                    break;
+            }
+            
+            // 显示结果
+            const resultArea = document.getElementById('result-area');
+            resultArea.innerHTML = `
+                <h3>✅ 生成的规格描述</h3>
+                <div class="result-text">${description}</div>
+            `;
+            document.getElementById('copy-btn').style.display = 'inline-flex';
+            
+            // 添加到历史
+            addToHistory(typeNames[currentType], description);
+        }
+
+        // 复制结果
+        function copyResult() {
+            const resultText = document.querySelector('.result-text').textContent;
+            navigator.clipboard.writeText(resultText).then(() => {
+                const btn = document.getElementById('copy-btn');
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '✅ 已复制';
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                }, 2000);
+            });
+        }
+
+        // 添加到历史
+        function addToHistory(type, description) {
+            const item = {
+                type: type,
+                description: description,
+                time: new Date().toLocaleString('zh-CN')
+            };
+            history.unshift(item);
+            if (history.length > 20) history.pop();
+            localStorage.setItem('componentHistory', JSON.stringify(history));
+            renderHistory();
+        }
+
+        // 渲染历史
+        function renderHistory() {
+            const container = document.getElementById('history-list');
+            if (history.length === 0) {
+                container.innerHTML = '<div class="empty-state" style="padding: 20px;"><p>暂无历史记录</p></div>';
+                return;
+            }
+            
+            container.innerHTML = history.map((item, index) => `
+                <div class="history-item" onclick="loadHistory(${index})">
+                    <div class="title">${item.type}</div>
+                    <div class="desc">${item.time}</div>
+                </div>
+            `).join('');
+        }
+
+        // 加载历史
+        function loadHistory(index) {
+            const item = history[index];
+            const resultArea = document.getElementById('result-area');
+            resultArea.innerHTML = `
+                <h3>📋 历史记录</h3>
+                <div class="result-text">${item.description}</div>
+            `;
+            document.getElementById('copy-btn').style.display = 'inline-flex';
+        }
+
+        // 清空历史
+        function clearHistory() {
+            if (confirm('确定要清空历史记录吗？')) {
+                history = [];
+                localStorage.removeItem('componentHistory');
+                renderHistory();
+            }
+        }
+
+        // 清空表单
+        function clearForm() {
+            document.querySelectorAll('input, select').forEach(el => {
+                if (el.tagName === 'SELECT') {
+                    el.selectedIndex = 0;
+                } else {
+                    el.value = '';
+                }
+            });
+            document.getElementById('result-area').innerHTML = `
+                <div class="empty-state">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    <p>在左侧填写物料信息，点击"生成规格描述"</p>
+                </div>
+            `;
+            document.getElementById('copy-btn').style.display = 'none';
+        }
+    </script>
 </body>
 </html>
