@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数据手册智能识别 - 电子物料规格描述工具</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif;
+            background: linear-gradient(135deg, #1a1f3a 0%, #0a0e27 100%);
+            min-height: 100vh;
+            color: #fff;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            padding: 30px 0;
+        }
+
+        h1 {
+            font-size: 2rem;
+            background: linear-gradient(90deg, #00d4ff, #00ff88);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #94a3b8;
+            font-size: 1rem;
+        }
+
+        .upload-area {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px dashed rgba(0, 212, 255, 0.3);
+            border-radius: 16px;
+            padding: 60px 40px;
+            text-align: center;
+            margin: 30px 0;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .upload-area:hover, .upload-area.dragover {
+            border-color: #00d4ff;
+            background: rgba(0, 212, 255, 0.1);
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .upload-text {
+            font-size: 1.2rem;
+            color: #fff;
+            margin-bottom: 8px;
+        }
+
+        .upload-hint {
+            color: #94a3b8;
+            font-size: 0.9rem;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .file-list {
+            margin-top: 20px;
+        }
+
+        .file-item {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .file-icon {
+            font-size: 24px;
+        }
+
+        .file-info {
+            flex: 1;
+        }
+
+        .file-name {
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        .file-size {
+            color: #94a3b8;
+            font-size: 0.85rem;
+        }
+
+        .file-remove {
+            background: rgba(239, 68, 68, 0.2);
+            border: none;
+            color: #ef4444;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+
+        .btn {
+            padding: 14px 28px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+        }
+
+        .btn-primary {
+            background: linear-gradient(90deg, #00d4ff, #00a8cc);
+            color: #fff;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 212, 255, 0.3);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .result-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            padding: 30px;
+            margin-top: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .result-title {
+            font-size: 1.3rem;
+            color: #00d4ff;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .progress-bar {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            height: 8px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .progress-fill {
+            background: linear-gradient(90deg, #00d4ff, #00ff88);
+            height: 100%;
+            border-radius: 8px;
+            transition: width 0.3s;
+        }
+
+        .extracted-data {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .data-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .data-row:last-child {
+            border-bottom: none;
+        }
+
+        .data-label {
+            color: #94a3b8;
+        }
+
+        .data-value {
+            color: #fff;
+            font-weight: 500;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+        }
+
+        .status-pending {
+            background: rgba(245, 158, 11, 0.2);
+            color: #f59e0b;
+        }
+
+        .status-success {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: #94a3b8;
+            text-decoration: none;
+            margin-bottom: 20px;
+            transition: color 0.3s;
+        }
+
+        .back-link:hover {
+            color: #00d4ff;
+        }
+
+        .generate-section {
+            margin-top: 30px;
+            text-align: center;
+        }
+
+        .description-output {
+            background: rgba(0, 212, 255, 0.1);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+            font-family: 'Courier New', monospace;
+            line-height: 1.6;
+            text-align: left;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="index.html" class="back-link">← 返回主界面</a>
+        
+        <header>
+            <h1>📄 数据手册智能识别</h1>
+            <p class="subtitle">上传PDF或Excel数据手册，自动提取器件规格参数</p>
+        </header>
+
+        <div class="upload-area" id="uploadArea">
+            <div class="upload-icon">📎</div>
+            <div class="upload-text">拖拽文件到这里</div>
+            <div class="upload-hint">或点击选择文件 · 支持 PDF、Excel、CSV 格式</div>
+            <input type="file" class="file-input" id="fileInput" accept=".pdf,.xlsx,.xls,.csv">
+        </div>
+
+        <div class="file-list" id="fileList"></div>
+
+        <div style="text-align: center; margin-top: 20px;">
+            <button class="btn btn-primary" id="extractBtn" disabled>
+                🔍 开始提取
+            </button>
+        </div>
+
+        <div class="result-card" id="resultCard" style="display: none;">
+            <div class="result-title">
+                📊 识别结果
+                <span class="status-badge status-pending" id="statusBadge">处理中...</span>
+            </div>
+            
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+            </div>
+
+            <div class="extracted-data" id="extractedData">
+                <div class="data-row">
+                    <span class="data-label">器件类型</span>
+                    <span class="data-value" id="compType">-</span>
+                </div>
+                <div class="data-row">
+                    <span class="data-label">型号</span>
+                    <span class="data-value" id="compModel">-</span>
+                </div>
+                <div class="data-row">
+                    <span class="data-label">品牌</span>
+                    <span class="data-value" id="compBrand">-</span>
+                </div>
+                <div class="data-row">
+                    <span class="data-label">主要参数</span>
+                    <span class="data-value" id="compParams">-</span>
+                </div>
+                <div class="data-row">
+                    <span class="data-label">封装</span>
+                    <span class="data-value" id="compPackage">-</span>
+                </div>
+            </div>
+
+            <div class="generate-section">
+                <button class="btn btn-primary" id="generateBtn" disabled>
+                    ✨ 生成规格描述
+                </button>
+                <div class="description-output" id="descriptionOutput" style="display: none;"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script>
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+        let uploadedFile = null;
+        let extractedData = {};
+
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const fileList = document.getElementById('fileList');
+        const extractBtn = document.getElementById('extractBtn');
+        const resultCard = document.getElementById('resultCard');
+        const progressFill = document.getElementById('progressFill');
+
+        // 文件上传处理
+        uploadArea.addEventListener('click', () => fileInput.click());
+        
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFile(files[0]);
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFile(e.target.files[0]);
+            }
+        });
+
+        function handleFile(file) {
+            const allowedTypes = ['application/pdf', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/vnd.ms-excel', 'text/csv'];
+            const allowedExtensions = ['.pdf', '.xlsx', '.xls', '.csv'];
+            
+            const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
+            
+            if (!allowedExtensions.includes(fileExtension)) {
+                alert('不支持的文件格式，请上传PDF、Excel或CSV文件');
+                return;
+            }
+
+            if (file.size > 10 * 1024 * 1024) {
+                alert('文件大小不能超过10MB');
+                return;
+            }
+
+            uploadedFile = file;
+            displayFile(file);
+            extractBtn.disabled = false;
+        }
+
+        function displayFile(file) {
+            const fileSize = formatFileSize(file.size);
+            const fileIcon = file.name.endsWith('.pdf') ? '📄' : '📊';
+            
+            fileList.innerHTML = `
+                <div class="file-item">
+                    <span class="file-icon">${fileIcon}</span>
+                    <div class="file-info">
+                        <div class="file-name">${file.name}</div>
+                        <div class="file-size">${fileSize}</div>
+                    </div>
+                    <button class="file-remove" onclick="removeFile()">删除</button>
+                </div>
+            `;
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+        }
+
+        function removeFile() {
+            uploadedFile = null;
+            fileList.innerHTML = '';
+            extractBtn.disabled = true;
+            resultCard.style.display = 'none';
+        }
+
+        // 开始提取
+        extractBtn.addEventListener('click', async () => {
+            if (!uploadedFile) return;
+
+            resultCard.style.display = 'block';
+            extractBtn.disabled = true;
+            progressFill.style.width = '0%';
+
+            try {
+                if (uploadedFile.name.endsWith('.pdf')) {
+                    await processPDF(uploadedFile);
+                } else {
+                    await processExcel(uploadedFile);
+                }
+            } catch (error) {
+                console.error('处理错误:', error);
+                alert('文件处理出错: ' + error.message);
+                extractBtn.disabled = false;
+            }
+        });
+
+        async function processPDF(file) {
+            updateProgress(10, '读取PDF文件...');
+            
+            const arrayBuffer = await file.arrayBuffer();
+            const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+            
+            updateProgress(30, '解析PDF内容...');
+            
+            let fullText = '';
+            for (let i = 1; i <= Math.min(pdf.numPages, 5); i++) {
+                const page = await pdf.getPage(i);
+                const textContent = await page.getTextContent();
+                const pageText = textContent.items.map(item => item.str).join(' ');
+                fullText += pageText + ' ';
+                updateProgress(30 + (i / Math.min(pdf.numPages, 5)) * 30, `解析第 ${i}/${Math.min(pdf.numPages, 5)} 页...`);
+            }
+
+            updateProgress(70, '识别器件信息...');
+            extractComponentInfo(fullText);
+            
+            updateProgress(100, '完成');
+            document.getElementById('statusBadge').className = 'status-badge status-success';
+            document.getElementById('statusBadge').textContent = '识别完成';
+            document.getElementById('generateBtn').disabled = false;
+        }
+
+        async function processExcel(file) {
+            updateProgress(10, '读取Excel文件...');
+            
+            const arrayBuffer = await file.arrayBuffer();
+            const workbook = XLSX.read(arrayBuffer, { type: 'array' });
+            
+            updateProgress(40, '解析表格数据...');
+            
+            const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+            const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+            
+            updateProgress(70, '识别器件信息...');
+            
+            let fullText = '';
+            jsonData.forEach(row => {
+                if (Array.isArray(row)) {
+                    fullText += row.join(' ') + ' ';
+                }
+            });
+            
+            extractComponentInfo(fullText);
+            
+            updateProgress(100, '完成');
+            document.getElementById('statusBadge').className = 'status-badge status-success';
+            document.getElementById('statusBadge').textContent = '识别完成';
+            document.getElementById('generateBtn').disabled = false;
+        }
+
+        function updateProgress(percent, text) {
+            progressFill.style.width = percent + '%';
+            document.getElementById('statusBadge').textContent = text;
+        }
+
+        function extractComponentInfo(text) {
+            // 识别器件类型
+            let type = '未知';
+            if (/resistor|电阻|Ω|ohm/i.test(text)) type = '电阻';
+            else if (/capacitor|电容|µF|pF|nF/i.test(text)) type = '电容';
+            else if (/inductor|电感|µH|nH/i.test(text)) type = '电感';
+            else if (/diode|二极管|rectifier/i.test(text)) type = '二极管';
+            else if (/transistor|三极管|mosfet|bipolar/i.test(text)) type = '三极管';
+            else if (/ic|chip|microcontroller|mcu|集成电路/i.test(text)) type = 'IC芯片';
+
+            // 识别型号（常见格式）
+            const modelMatch = text.match(/(?:Model|Part Number|型号|P\/N)[\s:]*([A-Z0-9-]+)/i) ||
+                              text.match(/\b([A-Z]{2,}\d{3,}[A-Z0-9-]*)\b/);
+            const model = modelMatch ? modelMatch[1] : '未识别';
+
+            // 识别品牌
+            const brandMatch = text.match(/(?:Manufacturer|Brand|品牌)[\s:]*([A-Za-z0-9]+)/i) ||
+                               text.match(/\b(TI|ST|NXP|ON|Vishay|Murata|Yageo|Samsung|TDK|Infineon|Microchip|STMicro)\b/i);
+            const brand = brandMatch ? brandMatch[1] : '未识别';
+
+            // 识别封装
+            const packageMatch = text.match(/(?:Package|封装|Case)[\s:]*(SOT-?\d+|SOIC|QFP|BGA|DIP|0603|0805|0402|1206|SMD|插件)/i);
+            const package = packageMatch ? packageMatch[1] : '未识别';
+
+            // 提取主要参数（简化版）
+            let params = [];
+            if (type === '电阻') {
+                const value = text.match(/(\d+\.?\d*)\s*(Ω|ohm|kΩ|kohm|MΩ|Mohm)/i);
+                const power = text.match(/(\d\/\d+|[\d.]+)\s*(W|watt)/i);
+                if (value) params.push(`${value[1]}${value[2]}`);
+                if (power) params.push(`${power[1]}W`);
+            } else if (type === '电容') {
+                const value = text.match(/(\d+\.?\d*)\s*(µF|uF|pF|nF|mF)/i);
+                const voltage = text.match(/(\d+)\s*(V|volt)/i);
+                if (value) params.push(`${value[1]}${value[2]}`);
+                if (voltage) params.push(`${voltage[1]}V`);
+            }
+
+            extractedData = {
+                type,
+                model,
+                brand,
+                package: package,
+                params: params.join(', ') || '未识别'
+            };
+
+            document.getElementById('compType').textContent = type;
+            document.getElementById('compModel').textContent = model;
+            document.getElementById('compBrand').textContent = brand;
+            document.getElementById('compPackage').textContent = package;
+            document.getElementById('compParams').textContent = params.join(', ') || '未识别';
+        }
+
+        // 生成规格描述
+        document.getElementById('generateBtn').addEventListener('click', () => {
+            let description = '';
+            
+            switch(extractedData.type) {
+                case '电阻':
+                    description = `${extractedData.model} 贴片电阻，${extractedData.params}，${extractedData.package}封装，${extractedData.brand}品牌`;
+                    break;
+                case '电容':
+                    description = `${extractedData.model} 贴片电容，${extractedData.params}，${extractedData.package}封装，${extractedData.brand}品牌`;
+                    break;
+                case 'IC芯片':
+                    description = `${extractedData.model} IC芯片，${extractedData.package}封装 ${extractedData.params}，${extractedData.brand}品牌`;
+                    break;
+                default:
+                    description = `${extractedData.model} ${extractedData.type}，${extractedData.params}，${extractedData.package}封装，${extractedData.brand}品牌`;
+            }
+
+            const output = document.getElementById('descriptionOutput');
+            output.textContent = description;
+            output.style.display = 'block';
+
+            // 保存到历史记录
+            saveToHistory(extractedData.type, description);
+        });
+
+        function saveToHistory(type, description) {
+            let history = JSON.parse(localStorage.getItem('componentHistory') || '[]');
+            history.unshift({
+                type: type,
+                description: description,
+                time: new Date().toLocaleString('zh-CN'),
+                source: '数据手册识别'
+            });
+            if (history.length > 20) history.pop();
+            localStorage.setItem('componentHistory', JSON.stringify(history));
+        }
+    </script>
+</body>
+</html>
